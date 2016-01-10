@@ -14,7 +14,7 @@ fs.readFile("package.json", "utf8", function(err, data){
     childProcess.exec('npm show ' + key + ' --json', function(error, stdout, stderr){
       var pckgInfo = JSON.parse(stdout)
       // console.log(pckgInfo)
-      console.log(pckgInfo.name + " : " + pckgInfo.version)
+      console.log(pckgInfo.name + " : " + pckgInfo.versions)
     });
   }
 
