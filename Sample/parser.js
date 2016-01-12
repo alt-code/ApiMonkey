@@ -42,6 +42,6 @@ fs.readFile("package.json", "utf8", function(err, data) {
         }
     }
 
-    // loop(0);
+    loop(0);
 
 })

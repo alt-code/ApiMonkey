@@ -1,8 +1,9 @@
 Initial list of sample projects to test:
 
-1. Free Code Camp 	https://github.com/FreeCodeCamp/FreeCodeCamp.git
-2. Camper Bot 		https://github.com/FreeCodeCamp/camperbot.git
-3. Strider-CD 		https://github.com/Strider-CD/strider.git
-4. Butter Project 	https://github.com/butterproject/butter-desktop.git (no tests)
-5. Lazysizes 		https://github.com/aFarkas/lazysizes.git
-6. Inquirer.js         https://github.com/SBoudrias/Inquirer.js.git
+1. Free Code Camp       https://github.com/FreeCodeCamp/FreeCodeCamp.git
+2. Camper Bot 		    https://github.com/FreeCodeCamp/camperbot.git
+3. Strider-CD 		    https://github.com/Strider-CD/strider.git
+4. Butter Project       https://github.com/butterproject/butter-desktop.git
+5. Lazysizes            https://github.com/aFarkas/lazysizes.git
+6. Inquirer.js		    https://github.com/SBoudrias/Inquirer.js.git
+7. Npm-check-updates    https://github.com/tjunnone/npm-check-updates.git
