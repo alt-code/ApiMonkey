@@ -5,6 +5,9 @@ var childProcess = require('child_process');
 var async = require("async");
 var map = new Object();
 
+var outdated = [];
+var allDependencies = [];
+
 if (fs.existsSync('cache.json')) {
     var cacheData = JSON.parse(fs.readFileSync('cache.json', "utf8"));
     for (var i in cacheData) {
@@ -14,6 +17,12 @@ if (fs.existsSync('cache.json')) {
     fs.writeFileSync('cache.json', '');
 }
 
+function addToArray(array, key, versions){
+    array.push({
+        "name": key,
+        "versions": versions
+    });
+}
 
 fs.readFile("package.json", "utf8", function(err, data) {
 
@@ -21,9 +30,6 @@ fs.readFile("package.json", "utf8", function(err, data) {
     var dependencies = obj.dependencies;
     var devDependencies = obj.devDependencies;
     var keys = Object.keys(dependencies);
-
-    var outdated = [];
-    var allDependencies = [];
 
     async.each(keys, function(key, callback) {
 
@@ -33,17 +39,12 @@ fs.readFile("package.json", "utf8", function(err, data) {
 
             var versions = map[key];
 
-            allDependencies.push({
-                "name": key,
-                "versions": versions
-            });
+            addToArray(allDependencies, key, versions);
 
             if (currentVersion != versions[versions.length - 1]) {
-                outdated.push({
-                    "name": key,
-                    "versions": versions
-                });
+                addToArray(outdated, key, versions);
             }
+
             callback();
 
         }else{
@@ -52,17 +53,12 @@ fs.readFile("package.json", "utf8", function(err, data) {
 
                 var pckgInfo = JSON.parse(stdout);
 
-                allDependencies.push({
-                    "name": pckgInfo.name,
-                    "versions": pckgInfo.versions
-                });
+                addToArray(allDependencies, pckgInfo.name, pckgInfo.versions);
 
                 if (currentVersion != pckgInfo.version) {
-                    outdated.push({
-                        "name": pckgInfo.name,
-                        "versions": pckgInfo.versions
-                    });
+                    addToArray(outdated, pckgInfo.name, pckgInfo.versions);
                 }
+
                 callback();
             })
         }
@@ -70,7 +66,7 @@ fs.readFile("package.json", "utf8", function(err, data) {
         if (err) {
             console.log("Error: " + err);
         } else {
-            console.log("Ouput: " + JSON.stringify(outdated));
+            console.log("Outdated dependencies: " + JSON.stringify(outdated));
             fs.writeFileSync('cache.json', JSON.stringify(allDependencies));
         }
     });
