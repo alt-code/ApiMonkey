@@ -12,16 +12,20 @@ var allDependencies = [];
 if (fs.existsSync('cache.json')) {
     var cacheData = JSON.parse(fs.readFileSync('cache.json', "utf8"));
     for (var i in cacheData) {
-        map[cacheData[i].name] = cacheData[i].versions
+        var obj = {};
+        obj.versions = cacheData[i].versions;
+        obj.url = cacheData[i].url
+        map[cacheData[i].name] = obj
     }
 } else {
     fs.writeFileSync('cache.json', '');
 }
 
-function addToArray(array, key, versions) {
+function addToArray(array, key, versions, url) {
     array.push({
         "name": key,
-        "versions": versions
+        "versions": versions,
+        "url": url
     });
 }
 
@@ -38,13 +42,13 @@ fs.readFile("package.json", "utf8", function(err, data) {
 
         if (key in map) {
 
-            var versions = map[key];
+            var versions = map[key].versions;
 
-            addToArray(allDependencies, key, versions);
+            addToArray(allDependencies, key, versions, map[key].url);
 
             if (currentVersion != versions[versions.length - 1]) {
                 var newerVersions = cmpVerModule.getNewerVersions(versions, currentVersion);
-                addToArray(outdated, key, newerVersions);
+                addToArray(outdated, key, newerVersions, map[key].url);
             }
 
             callback();
@@ -55,12 +59,12 @@ fs.readFile("package.json", "utf8", function(err, data) {
 
                 var pckgInfo = JSON.parse(stdout);
 
-                addToArray(allDependencies, pckgInfo.name, pckgInfo.versions);
+                addToArray(allDependencies, pckgInfo.name, pckgInfo.versions, pckgInfo.repository.url);
 
                 if (currentVersion != pckgInfo.version) {
 
                     var newerVersions = cmpVerModule.getNewerVersions(pckgInfo.versions, currentVersion);
-                    addToArray(outdated, pckgInfo.name, newerVersions);
+                    addToArray(outdated, pckgInfo.name, newerVersions, pckgInfo.repository.url);
                 }
 
                 callback();
@@ -73,7 +77,7 @@ fs.readFile("package.json", "utf8", function(err, data) {
 
             fs.writeFileSync('cache.json', JSON.stringify(allDependencies));
 
-            console.log(JSON.stringify(outdated));
+            
 
 
 
