@@ -4,6 +4,7 @@ var fs = require("fs");
 var childProcess = require('child_process');
 var async = require("async");
 var map = new Object();
+var cmpVerModule = require('./compareVersions.js')
 
 var outdated = [];
 var allDependencies = [];
@@ -17,7 +18,7 @@ if (fs.existsSync('cache.json')) {
     fs.writeFileSync('cache.json', '');
 }
 
-function addToArray(array, key, versions){
+function addToArray(array, key, versions) {
     array.push({
         "name": key,
         "versions": versions
@@ -35,19 +36,20 @@ fs.readFile("package.json", "utf8", function(err, data) {
 
         var currentVersion = dependencies[key].replace(/[^\d.]/g, '');
 
-        if(key in map){
+        if (key in map) {
 
             var versions = map[key];
 
             addToArray(allDependencies, key, versions);
 
             if (currentVersion != versions[versions.length - 1]) {
-                addToArray(outdated, key, versions);
+                var newerVersions = cmpVerModule.getNewerVersions(versions, currentVersion);
+                addToArray(outdated, key, newerVersions);
             }
 
             callback();
 
-        }else{
+        } else {
 
             childProcess.exec('npm show ' + key + ' --json', function(error, stdout, stderr) {
 
@@ -56,7 +58,9 @@ fs.readFile("package.json", "utf8", function(err, data) {
                 addToArray(allDependencies, pckgInfo.name, pckgInfo.versions);
 
                 if (currentVersion != pckgInfo.version) {
-                    addToArray(outdated, pckgInfo.name, pckgInfo.versions);
+
+                    var newerVersions = cmpVerModule.getNewerVersions(pckgInfo.versions, currentVersion);
+                    addToArray(outdated, pckgInfo.name, newerVersions);
                 }
 
                 callback();
@@ -66,8 +70,13 @@ fs.readFile("package.json", "utf8", function(err, data) {
         if (err) {
             console.log("Error: " + err);
         } else {
-            console.log("Outdated dependencies: " + JSON.stringify(outdated));
+
             fs.writeFileSync('cache.json', JSON.stringify(allDependencies));
+
+            console.log(JSON.stringify(outdated));
+
+
+
         }
     });
 
