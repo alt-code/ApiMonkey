@@ -33,7 +33,7 @@ fs.readFile("package.json", "utf8", function(err, data) {
     var dependencies = obj.dependencies;
     var devDependencies = obj.devDependencies;
     var keys = Object.keys(dependencies);
-    var repo = obj.repository.url;
+    var repo = obj.repository;
 
     async.each(keys, function(key, callback) {
 
@@ -78,20 +78,23 @@ fs.readFile("package.json", "utf8", function(err, data) {
 
             loop(0);
 
-            function loop(i){
-                if(i == outdated.length){
+            function loop(i) {
+                if (i == outdated.length) {
                     console.log("All done.");
-                }else{
+                } else {
 
                     var depName = outdated[i].name;
                     var depVersions = outdated[i].versions;
-
-                    async.each(depVersions, function(depVersion, callback){
-                        childProcess.exec('git clone ' + repo + ' ' + depName + '/' + depVersion, function(error, stdout, stderr){
-                            console.log(depName + '/' + depVersion + ' done.');
-                            callback();
+                    async.each(depVersions, function(depVersion, callback) {
+                        childProcess.exec('git clone ' + repo + ' ' + depName + '/' + depVersion, function(error, stdout, stderr) {
+                            childProcess.exec('cd ' + depName + '/' + depVersion + '; npm install', function(error, stdout, stderr){
+                                childProcess.exec('cd ' + depName + '/' + depVersion + '; npm install ' + depName + '@' + depVersion, function(error, stdout, stderr){
+                                    console.log(depName + '/' + depVersion + ' done.');
+                                    callback();
+                                })
+                            })
                         })
-                    }, function(err){
+                    }, function(err) {
                         console.log(depName + ' done.');
                         loop(i + 1);
                     })
