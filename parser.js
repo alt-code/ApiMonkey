@@ -89,8 +89,11 @@ fs.readFile("package.json", "utf8", function(err, data) {
                         childProcess.exec('git clone ' + repo + ' ' + depName + '/' + depVersion, function(error, stdout, stderr) {
                             childProcess.exec('cd ' + depName + '/' + depVersion + '; npm install', function(error, stdout, stderr){
                                 childProcess.exec('cd ' + depName + '/' + depVersion + '; npm install ' + depName + '@' + depVersion, function(error, stdout, stderr){
-                                    console.log(depName + '/' + depVersion + ' done.');
-                                    callback();
+                                    childProcess.exec('cd ' + depName + '/' + depVersion + '; npm test', function(error, stdout, stderr){
+                                        console.log(depName + '/' + depVersion + ' done.\n' + stdout);
+                                        callback();
+                                    })
+                                    // callback();
                                 })
                             })
                         })
