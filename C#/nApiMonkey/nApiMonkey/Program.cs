@@ -19,8 +19,15 @@ namespace nApiMonkey
                 Console.WriteLine(package.Id + package.Version);
             }
 
+            //    InstallCommand installCmd = new InstallCommand();
+            //    installCmd.Execute("EntityFramework", "6.1.3", @"<path to packages folder>");
+
+            //    UpdateCommand updateCmd = new UpdateCommand();
+            //    updateCmd.Execute("jQuery", @"<path to packages folder>");
+
             // Waits for any key to be pressed.
             Console.ReadKey();
+
         }
     }
 }
