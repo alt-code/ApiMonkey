@@ -33,7 +33,7 @@ fs.readFile("package.json", "utf8", function(err, data) {
     var dependencies = obj.dependencies;
     var devDependencies = obj.devDependencies;
     var keys = Object.keys(dependencies);
-    var repo = obj.repository;
+    var repo = process.argv[2];
 
     async.each(keys, function(key, callback) {
 
