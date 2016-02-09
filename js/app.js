@@ -6,6 +6,7 @@ var cmpVerModule = require('./compareVersions.js')
 
 var outdated = [];
 var allDependencies = [];
+var repo = process.argv[2];
 
 if (fs.existsSync('cache.json')) {
     var cacheData = JSON.parse(fs.readFileSync('cache.json', "utf8"));
@@ -27,13 +28,18 @@ function addToArray(array, key, versions, url) {
     });
 }
 
+// childProcess.exec('npm install', function(error, stdout, stderr){
+//     childProcess.exec('npm test', function(error, stdout, stderr){
+//         console.log(stdout);
+//     })
+// })
+
 fs.readFile("package.json", "utf8", function(err, data) {
 
     var obj = JSON.parse(data);
     var dependencies = obj.dependencies;
     var devDependencies = obj.devDependencies;
     var keys = Object.keys(dependencies);
-    var repo = process.argv[2];
 
     async.each(keys, function(key, callback) {
 
@@ -82,7 +88,6 @@ fs.readFile("package.json", "utf8", function(err, data) {
                 if (i == outdated.length) {
                     console.log("All done.");
                 } else {
-
                     var depName = outdated[i].name;
                     var depVersions = outdated[i].versions;
                     async.each(depVersions, function(depVersion, callback) {
