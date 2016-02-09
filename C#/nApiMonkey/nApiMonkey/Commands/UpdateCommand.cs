@@ -9,44 +9,37 @@ using NuGet;
 //using Microsoft.VisualStudio;
 //using MsBuildProject = Microsoft.Build.Evaluation.Project;
 //using Project1 = EnvDTE.Project;
-//using NuGet.VisualStudio;
+using NuGet.VisualStudio;
 using NuGet.Common;
 
 namespace nApiMonkey
 {
         class UpdateCommand
         {
-        public void Execute(string packageid,string targetFolder)
+        public void Execute(string packageid,string targetFolder, String version, string packages)
         {
-            IPackageRepository repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");       
-            var packagePathResolver = new DefaultPackagePathResolver(targetFolder);
-            var packagesFolderFileSystem = new PhysicalFileSystem("");
-            var ms = new MSBuildProjectSystem("");
+            try
+            {
+            IPackageRepository repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");            
+            var packagePathResolver = new DefaultPackagePathResolver(packages);
+            var packagesFolderFileSystem = new PhysicalFileSystem(packages);
+            var projectSystem = new MSBuildProjectSystem(targetFolder);
             var localRepository = new LocalPackageRepository(packagePathResolver, packagesFolderFileSystem);
-            var projectManager = new ProjectManager(repo, packagePathResolver, ms,localRepository);
+            var projectManager = new ProjectManager(repo, packagePathResolver, projectSystem, localRepository);
             
-            projectManager.PackageReferenceAdded += (sender, args) => args.Package.GetLibFiles().Each(file => SaveAssemblyFile(args.InstallPath, file));
-            projectManager.AddPackageReference(packageid);
+           // projectManager.PackageReferenceAdded += (sender, args) => args.Package.GetLibFiles().Each(file => SaveAssemblyFile(args.InstallPath, file));
+           // projectManager.AddPackageReference(packageid);
+            projectManager.UpdatePackageReference(packageid, SemanticVersion.Parse(version), false, false);
             projectSystem.Save();
-
-            Assembly.GetExecutingAssembly().Location.ParentDirectory().ParentDirectory().ParentDirectory().AppendPath("NuGetSample.csproj");
-            try { 
-               // manager.UpdatePackage(packageid, true, false);
-                System.Console.Write("Success");
+               
+            System.Console.Write("Success");
             } catch(Exception e)
             {
                 System.Console.Write("failure");
                 System.Console.Write(e.StackTrace);
             }
-            
+           
         }
-
-        //PackageManager manager = new PackageManager(repo, path);
-        //string webRepositoryDirectory = WebProjectManager.GetWebRepositoryDirectory();
-        //IPackagePathResolver pathResolver = new DefaultPackagePathResolver(webRepositoryDirectory);
-        //IPackageRepository localRepository = PackageRepositoryFactory.Default.CreateRepository(webRepositoryDirectory);
-        //var projectManager = new ProjectManager(repo, pathResolver, project, localRepository);
-
-    }
+        }
 }
 
