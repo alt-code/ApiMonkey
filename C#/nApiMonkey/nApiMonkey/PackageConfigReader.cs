@@ -20,5 +20,17 @@ namespace nApiMonkey
             
             return element;
         }
+        //  foreach (string fileName in Directory.EnumerateFiles("d:\root\path", "packages.config", SearchOption.AllDirectories))
+        //  {
+        //      Read the packages.config file...
+        //  }
+
+        public bool writeToConfig(string fileName, string packageId, SemanticVersion oldversion, SemanticVersion newversion)
+        {
+            var file = new PackageReferenceFile(fileName);
+            file.DeleteEntry(packageId, oldversion);
+            file.AddEntry(packageId, newversion);
+            return true;
+        }
     }
 }
