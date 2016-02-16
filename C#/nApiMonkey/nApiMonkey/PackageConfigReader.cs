@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet;
+using System.IO;
+
 namespace nApiMonkey
 {
     class PackageConfigReader
@@ -20,10 +22,14 @@ namespace nApiMonkey
             
             return element;
         }
-        //  foreach (string fileName in Directory.EnumerateFiles("d:\root\path", "packages.config", SearchOption.AllDirectories))
-        //  {
-        //      Read the packages.config file...
-        //  }
+        public void readAllConfigs(string root)
+        {
+              foreach (string fileName in Directory.EnumerateFiles(root, "packages.config", SearchOption.AllDirectories))
+              {
+                Console.WriteLine(fileName);
+                //1readConfig(fileName);
+              }
+        }
 
         public bool writeToConfig(string fileName, string packageId, SemanticVersion oldversion, SemanticVersion newversion)
         {
