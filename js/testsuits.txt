@@ -1,0 +1,9 @@
+Popular test suits being used:
+
+1. Mocha:            mocha -R xunit
+2. Makefile: 
+3. Karma:
+4. Gulp:
+5. Grunt:
+6. Lint:
+7. Nodeunit:         nodeunit --reporter junit --output junit.out

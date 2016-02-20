@@ -1,115 +1,96 @@
-var fs = require("fs");
+var fs = require('fs');
 var childProcess = require('child_process');
 var async = require("async");
-var map = new Object();
-var cmpVerModule = require('./compareVersions.js')
+var utilities = require('./utilities.js')
 
-var outdated = [];
-var allDependencies = [];
 var repo = process.argv[2];
+var projectName = process.argv[3];
 
-if (fs.existsSync('cache.json')) {
-    var cacheData = JSON.parse(fs.readFileSync('cache.json', "utf8"));
-    for (var i in cacheData) {
-        var obj = {};
-        obj.versions = cacheData[i].versions;
-        obj.url = cacheData[i].url
-        map[cacheData[i].name] = obj
-    }
-} else {
-    fs.writeFileSync('cache.json', '');
-}
+utilities.initialSetup(repo, projectName, function () {
 
-function addToArray(array, key, versions, url) {
-    array.push({
-        "name": key,
-        "versions": versions,
-        "url": url
-    });
-}
+    console.log('initialSetup done.');
+    utilities.parsePackageJSON(projectName, function (obj) {
 
-// childProcess.exec('npm install', function(error, stdout, stderr){
-//     childProcess.exec('npm test', function(error, stdout, stderr){
-//         console.log(stdout);
-//     })
-// })
+        var dependencies = obj.dependencies;
+        var devDependencies = obj.devDependencies;
+        var keys = Object.keys(dependencies);
 
-fs.readFile("package.json", "utf8", function(err, data) {
+        utilities.checkForCache(projectName, function (map) {
 
-    var obj = JSON.parse(data);
-    var dependencies = obj.dependencies;
-    var devDependencies = obj.devDependencies;
-    var keys = Object.keys(dependencies);
+            console.log('checkForCache done.');
+            var outdated = [];
+            var allDependencies = [];
 
-    async.each(keys, function(key, callback) {
+            async.each(keys, function(key, callback) {
 
-        var currentVersion = dependencies[key].replace(/[^\d.]/g, '');
+                var currentVersion = dependencies[key].replace(/[^\d.]/g, '');
 
-        if (key in map) {
+                if (key in map) {
+                    console.log('cache exists');
+                    var versions = map[key].versions;
 
-            var versions = map[key].versions;
+                    allDependencies = utilities.addToArray(allDependencies, key, versions);
 
-            addToArray(allDependencies, key, versions, map[key].url);
+                    if (currentVersion != versions[versions.length - 1]) {
+                        var newerVersions = utilities.getNewerVersions(versions, currentVersion);
+                        outdated = utilities.addToArray(outdated, key, newerVersions);
+                    }
 
-            if (currentVersion != versions[versions.length - 1]) {
-                var newerVersions = cmpVerModule.getNewerVersions(versions, currentVersion);
-                addToArray(outdated, key, newerVersions, map[key].url);
-            }
+                    callback();
 
-            callback();
-
-        } else {
-
-            childProcess.exec('npm show ' + key + ' --json', function(error, stdout, stderr) {
-
-                var pckgInfo = JSON.parse(stdout);
-
-                addToArray(allDependencies, pckgInfo.name, pckgInfo.versions, pckgInfo.repository.url);
-
-                if (currentVersion != pckgInfo.version) {
-
-                    var newerVersions = cmpVerModule.getNewerVersions(pckgInfo.versions, currentVersion);
-                    addToArray(outdated, pckgInfo.name, newerVersions, pckgInfo.repository.url);
-                }
-
-                callback();
-            })
-        }
-    }, function(err) {
-        if (err) {
-            console.log("Error: " + err);
-        } else {
-
-            fs.writeFileSync('cache.json', JSON.stringify(allDependencies));
-
-            loop(0);
-
-            function loop(i) {
-                if (i == outdated.length) {
-                    console.log("All done.");
                 } else {
-                    var depName = outdated[i].name;
-                    var depVersions = outdated[i].versions;
-                    async.each(depVersions, function(depVersion, callback) {
-                        childProcess.exec('git clone ' + repo + ' ' + depName + '/' + depVersion, function(error, stdout, stderr) {
-                            childProcess.exec('cd ' + depName + '/' + depVersion + '; npm install', function(error, stdout, stderr){
-                                childProcess.exec('cd ' + depName + '/' + depVersion + '; npm install ' + depName + '@' + depVersion, function(error, stdout, stderr){
-                                    childProcess.exec('cd ' + depName + '/' + depVersion + '; npm test', function(error, stdout, stderr){
-                                        console.log(depName + '/' + depVersion + ' done.\n' + stdout);
-                                        callback();
-                                    })
-                                    // callback();
-                                })
-                            })
-                        })
-                    }, function(err) {
-                        console.log(depName + ' done.');
-                        loop(i + 1);
+                    console.log("cache doesn't exist.");
+                    childProcess.exec('npm show ' + key + ' --json', function(error, stdout, stderr) {
+
+                        var pckgInfo = JSON.parse(stdout);
+
+                        allDependencies = utilities.addToArray(allDependencies, pckgInfo.name, pckgInfo.versions);
+
+                        if (currentVersion != pckgInfo.version) {
+                            var newerVersions = utilities.getNewerVersions(pckgInfo.versions, currentVersion);
+                            outdated = utilities.addToArray(outdated, pckgInfo.name, newerVersions);
+                        }
+
+                        callback();
                     })
                 }
-            }
+            }, function(err) {
+                if (err) {
+                    console.log("Error: " + err);
+                } else {
 
-        }
-    });
+                    fs.writeFileSync(projectName + '/cache.json', JSON.stringify(allDependencies));
+                    console.log("Outdated: " + JSON.stringify(outdated));
 
+                    loop(0);
+
+                    function loop(i) {
+                        if (i == outdated.length) {
+                            console.log("All done.");
+                        } else {
+                            var depName = outdated[i].name;
+                            var depVersions = outdated[i].versions;
+                            async.each(depVersions, function(depVersion, callback) {
+
+                                var verPath =  projectName + '/dependencies/' + depName + '/' + depVersion
+                                var tasks = 'git clone ' + repo + ' ' + verPath + ' && cd ' + verPath + ' && npm install && npm install ' +  depName + '@' + depVersion;
+                                console.log("Tasks: " + tasks);
+                                childProcess.exec(tasks, function(error, stdout, stderr) {
+                                    console.log("basic tasks done.");
+                                    childProcess.exec('cd ' + verPath + ' && npm test', function(error, stdout, stderr){
+                                        console.log(depName + '/' + depVersion + ' done.\n' + stdout + "ERROR: " + stderr);
+                                        callback();
+                                    })
+                                })
+
+                            }, function(err) {
+                                console.log(depName + ' done.');
+                                loop(i + 1);
+                            })
+                        }
+                    }
+                }
+            });
+        })
+    })
 })
