@@ -6,18 +6,17 @@ var utilities = require('./utilities.js')
 var repo = process.argv[2];
 var projectName = process.argv[3];
 
-utilities.initialSetup(repo, projectName, function () {
+utilities.initialSetup(repo, projectName, function (config) {
 
-    console.log('initialSetup done.');
     utilities.parsePackageJSON(projectName, function (obj) {
 
         var dependencies = obj.dependencies;
         var devDependencies = obj.devDependencies;
         var keys = Object.keys(dependencies);
+        var testCmd = utilities.modifyTestCmd(obj)
 
         utilities.checkForCache(projectName, function (map) {
 
-            console.log('checkForCache done.');
             var outdated = [];
             var allDependencies = [];
 
@@ -26,7 +25,6 @@ utilities.initialSetup(repo, projectName, function () {
                 var currentVersion = dependencies[key].replace(/[^\d.]/g, '');
 
                 if (key in map) {
-                    console.log('cache exists');
                     var versions = map[key].versions;
 
                     allDependencies = utilities.addToArray(allDependencies, key, versions);
@@ -39,7 +37,7 @@ utilities.initialSetup(repo, projectName, function () {
                     callback();
 
                 } else {
-                    console.log("cache doesn't exist.");
+
                     childProcess.exec('npm show ' + key + ' --json', function(error, stdout, stderr) {
 
                         var pckgInfo = JSON.parse(stdout);
@@ -60,7 +58,6 @@ utilities.initialSetup(repo, projectName, function () {
                 } else {
 
                     fs.writeFileSync(projectName + '/cache.json', JSON.stringify(allDependencies));
-                    console.log("Outdated: " + JSON.stringify(outdated));
 
                     loop(0);
 
@@ -74,11 +71,9 @@ utilities.initialSetup(repo, projectName, function () {
 
                                 var verPath =  projectName + '/dependencies/' + depName + '/' + depVersion
                                 var tasks = 'git clone ' + repo + ' ' + verPath + ' && cd ' + verPath + ' && npm install && npm install ' +  depName + '@' + depVersion;
-                                console.log("Tasks: " + tasks);
                                 childProcess.exec(tasks, function(error, stdout, stderr) {
-                                    console.log("basic tasks done.");
-                                    childProcess.exec('cd ' + verPath + ' && npm test', function(error, stdout, stderr){
-                                        console.log(depName + '/' + depVersion + ' done.\n' + stdout + "ERROR: " + stderr);
+                                    childProcess.exec('cd ' + verPath + ' && ' + testCmd, config, function(error, stdout, stderr){
+                                        console.log(stdout + "\n" + depName + '/' + depVersion + ' done.\n');
                                         callback();
                                     })
                                 })

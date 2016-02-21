@@ -20,9 +20,10 @@ function parseVersionString(str) {
 
 var cmdMap = {};
 
+// multiple test suites can be added here
+
 cmdMap['mocha'] = function (cmd) {
-    cmd = cmd + ' -R xunit'
-    return cmd
+    return cmd.replace(/mocha/g, 'mocha -R xunit')
 }
 
 module.exports = {
@@ -47,15 +48,21 @@ module.exports = {
         return newerVersions;
     },
 
-    modifyTestScript: function (cmd) {
-        if(cmd.indexOf('mocah') != 0){
-            return cmdMap['mocha'](cmd)
+    modifyTestCmd: function (obj) {
+        var testCmd = obj.scripts['test']
+        if(testCmd.indexOf('mocha') != 0){
+            return cmdMap['mocha'](testCmd)
         }
     },
 
     initialSetup: function (url, projectName, callback) {
+        var env = process.env
+        env.PATH = env.PATH + ':node_modules/.bin'
+        var config = {
+            env: env
+        }
         childProcess.exec('git clone ' + url + ' ' + projectName + ' && cd ' + projectName + ' && npm install', function(){
-            callback()
+            callback(config)
         })
     },
 
