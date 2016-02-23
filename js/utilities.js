@@ -24,7 +24,19 @@ var cmdMap = {};
 // multiple test suites can be added here
 
 cmdMap['mocha'] = function(cmd) {
-    return cmd.replace(/mocha/g, 'mocha -R xunit')
+    var modifyCmd = '';
+    if (cmd.indexOf('--reporter') == -1 && cmd.indexOf('-R') == -1) {
+        modifyCmd = cmd.replace(/mocha/g, 'mocha -R xunit')
+    } else if (cmd.indexOf('--reporter') != -1) {
+        var words = cmd.split(' ')
+        var toReplace = words[words.indexOf('--reporter') + 1];
+        modifyCmd = cmd.replace(toReplace, 'xunit')
+    } else if (cmd.indexOf('-R') != -1) {
+        var words = cmd.split(' ')
+        var toReplace = words[words.indexOf('-R') + 1];
+        modifyCmd = cmd.replace(toReplace, 'xunit')
+    }
+    return modifyCmd;
 }
 
 module.exports = {
@@ -51,7 +63,7 @@ module.exports = {
 
     modifyTestCmd: function(obj) {
         var testCmd = obj.scripts['test']
-        if (testCmd.indexOf('mocha') != 0) {
+        if (testCmd.indexOf('mocha') != -1) {
             return cmdMap['mocha'](testCmd)
         }
     },
@@ -105,12 +117,13 @@ module.exports = {
         })
     },
 
-    getNumbers: function(testResults, callback) {
+    getNumbers: function(testXML, callback) {
         var result = {
             tests: 0,
             failures: 0
         }
-        var lines = testResults.split('\n')
+        var lines = testXML.split('\n')
+
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i]
             if (line.indexOf('<testsuite') != -1) {
