@@ -4,3 +4,4 @@ Initial list of sample projects to test:
 2. Mern Starter         https://github.com/Hashnode/mern-starter.git
 3. Express              https://github.com/expressjs/express.git
 4. Redux                https://github.com/reactjs/redux.git
+5. async-testing        https://github.com/alexyoung/async-testing-tutorial
