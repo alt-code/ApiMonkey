@@ -15,14 +15,21 @@ namespace nApiMonkey
         {
             string project_name = "Hangfire.Core";
             string project_path = @"G:\samples_nuget\";
-            string sandbox_path = @"G:\nuget_sandbox";
-            PackageConfigReader oldConfReader = new PackageConfigReader();
-            //cloning a repo
-            //string repo = "";
-          // System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\gitcmd.sh", project_path).WaitForExit();
-            //     System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", project_path + " " + project_name + ".csproj").WaitForExit();
+            string sandbox_path = @"G:\nuget_sandbox_new";
+            
+
             string oldRootSol = @"G:\samples_nuget\Hangfire";
             string oldProjectPath = @"G:\samples_nuget\Hangfire\src\" + project_name;
+            //cloning a repo
+            //string repo = "";
+            // System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\gitcmd.sh", project_path).WaitForExit();
+            System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldProjectPath + " " + project_name + ".csproj").WaitForExit();
+            Report repo = new Report();
+            repo.ReportLocation = project_path;
+            repo.ReportName = project_name + "Report.md";
+            repo.writeOriginalReport(oldProjectPath);
+
+            PackageConfigReader oldConfReader = new PackageConfigReader();
             string oldPathToPackages = oldProjectPath + @"\packages.config";
             List<PackageElement> confPackages = oldConfReader.readConfig(oldPathToPackages);
             List<PackageElement> update = checkUpdate(confPackages);
@@ -45,12 +52,9 @@ namespace nApiMonkey
                     updateCmd.Execute(e.Packageid, newProjectPath + @"\" + project_name + ".csproj", e.Version, newRootSol + @"\packages");
                     Console.ReadKey();
                     System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", newProjectPath + " " + project_name + ".csproj").WaitForExit();
-                    //break;  //currently updating to only single version
-
-
+                    
                     //Read build output and generate a report
-                    Report repo = new Report();
-                    repo.writeReport(newProjectPath, e.Packageid , e.Version);
+                    repo.writeBuildReport(newProjectPath, e.Packageid , e.Version);
                 }
 
             }
