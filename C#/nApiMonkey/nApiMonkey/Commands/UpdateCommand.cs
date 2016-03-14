@@ -31,15 +31,17 @@ namespace nApiMonkey
                 projectManager.UpdatePackageReference(packageid, version, false, false);
                 projectSystem.Save();
 
-                System.Console.WriteLine(packages);
-             /*  string[] s = Directory.GetFiles(packages+ @"\CronExpressionDescriptor.1.14.0");
+                System.Console.WriteLine("Updating "+packages);
+                string filename = packageid + "." + version;
+                string[] s = Directory.GetFiles(packages+ @"\"+filename);
                 if (s.IsEmpty()) { System.Console.WriteLine("empty"); }
                 else
+                {
                     System.Console.WriteLine("nupkg file: " + s.First());
-                var nupkgFile = new PhysicalFileSystem(s[0]);
-                ZipPackage z = new ZipPackage(s[0]);
-                z.ExtractContents(nupkgFile, packages + @"\CronExpressionDescriptor.1.14.0");
-                */
+                    var nupkgFile = new PhysicalFileSystem(s[0]);
+                    ZipPackage z = new ZipPackage(s[0]);
+                    z.ExtractContents(nupkgFile, packages + @"\" + filename);
+                }
                 System.Console.Write("Successfully updated");
             }
             catch (Exception e)
