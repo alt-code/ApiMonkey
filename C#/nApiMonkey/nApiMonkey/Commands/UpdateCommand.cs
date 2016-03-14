@@ -41,7 +41,7 @@ namespace nApiMonkey
                     var nupkgFile = new PhysicalFileSystem(s[0]);
                     ZipPackage z = new ZipPackage(s[0]);
                     z.ExtractContents(nupkgFile, packages + @"\" + filename);
-                }
+                } 
                 System.Console.Write("Successfully updated");
             }
             catch (Exception e)
