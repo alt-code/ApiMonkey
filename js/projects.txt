@@ -7,3 +7,4 @@ Initial list of sample projects to test:
 5. async-testing        https://github.com/alexyoung/async-testing-tutorial
 6. connect              https://github.com/senchalabs/connect
 7. node-plog            https://github.com/airbnb/node-plog-client
+8. zookeeper-client     https://github.com/yahoo/node-zookeeper-client
