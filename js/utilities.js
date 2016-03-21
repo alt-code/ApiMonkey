@@ -1,4 +1,6 @@
 var fs = require('fs')
+var path = require('path')
+var mkdirp = require('mkdirp')
 var childProcess = require('child_process')
 var parser = require('xml2json');
 
@@ -20,6 +22,9 @@ function parseVersionString(str) {
 }
 
 var cmdMap = {};
+
+// base install 
+var PROJECTS_ROOT = "projects";
 
 // multiple test suites can be added here
 
@@ -70,14 +75,36 @@ module.exports = {
 
     initialSetup: function(url, projectName, callback) {
 
+
         var env = process.env
         env.PATH = env.PATH + ':node_modules/.bin'
         var config = {
-            env: env
+            env: env,
+            stdio: ['pipe', 'pipe', 'pipe']
         }
-        childProcess.exec('touch report.md && git clone ' + url + ' ' + projectName + ' && cd ' + projectName + ' && npm install', function(err, stdout, stderr) {
-            callback(config)
-        })
+        // Create projects directory
+        var baseVersion = path.join(PROJECTS_ROOT, projectName, "baseVersion");
+        mkdirp(baseVersion);
+
+        // Reset report
+        var reportPath = path.join(PROJECTS_ROOT, projectName, "report.md");
+        fs.closeSync(fs.openSync(reportPath, 'w'));
+
+        // git clone into baseVersion (if doesn't already exists)
+        if( !fs.statSync( path.join(baseVersion,'.git') ).isDirectory() )
+        {
+            childProcess.execSync('git clone ' + url + ' ' + ' ' + baseVersion);
+            // Install 
+            childProcess.exec('cd ' + baseVersion + '&& npm install', function(err, stdout, stderr) {
+                // 
+                callback(config, reportPath, baseVersion);
+            });
+        }
+        else
+        {
+            callback(config, reportPath, baseVersion);
+        }
+
     },
 
     addToArray: function(array, key, versions, url) {

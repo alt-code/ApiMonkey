@@ -6,17 +6,19 @@ var utilities = require('./utilities.js')
 var repo = process.argv[2];
 var projectName = process.argv[3];
 
-utilities.initialSetup(repo, projectName, function(config) {
+utilities.initialSetup(repo, projectName, function(config, reportPath, baseVersion) {
     console.log('Initial setup done.');
 
-    utilities.parsePackageJSON(projectName, function(obj) {
+    utilities.parsePackageJSON(baseVersion, function(obj) {
         console.log('Parse package done.');
 
         var dependencies = obj.dependencies;
         var devDependencies = obj.devDependencies;
         var keys = Object.keys(dependencies);
         var testCmd = utilities.modifyTestCmd(obj)
+        console.log("Modify test command: ", testCmd);
 
+        return;
         utilities.runInitialTests(projectName, testCmd, function(output) {
             console.log('Initial tests done.');
 
@@ -80,9 +82,16 @@ utilities.initialSetup(repo, projectName, function(config) {
                                     async.each(depVersions, function(depVersion, callback) {
 
                                         var verPath = projectName + '/dependencies/' + depName + '/' + depVersion
-                                        var tasks = 'git clone ' + repo + ' ' + verPath + ' && cd ' + verPath + ' && npm install && npm install ' + depName + '@' + depVersion;
-                                        childProcess.exec(tasks, function(error, stdout, stderr) {
-                                            childProcess.exec('cd ' + verPath + ' && ' + testCmd, config, function(error, stdout, stderr) {
+                                        //var tasks = 'git clone ' + repo + ' ' + verPath + ' && cd ' + verPath + ' && npm install && npm install ' + depName + '@' + depVersion;
+
+                                        var stdout = childProcess.execSync(tasks);
+                                            //function(error, stdout, stderr) {
+                                        stdout = stdout.toString();
+                                        {
+                                             stdout = childProcess.execSync('cd ' + verPath + ' && ' + testCmd, config);
+                                             stdout = stdout.toString();
+                                             //function(error, stdout, stderr) 
+                                             {
                                                 utilities.getNumbers(stdout, function(newTestsResult) {
                                                     console.log("Test results with " + depName + '@' + depVersion + ': ' + JSON.stringify(newTestsResult));
                                                     if (newTestsResult.tests != initialTestsResult.tests || newTestsResult.failures != initialTestsResult.failures) {
@@ -93,8 +102,9 @@ utilities.initialSetup(repo, projectName, function(config) {
                                                     console.log(depName + '@' + depVersion + ' done.');
                                                     callback();
                                                 })
-                                            })
-                                        })
+                                            }
+                                        }
+
                                     }, function(err) {
                                         console.log(depName + ' done.');
                                         loop(i + 1);
