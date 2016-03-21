@@ -105,9 +105,7 @@ module.exports = {
             resolve([config, PROJECTS_ROOT, reportPath, baseVersion, null]);
         }
     });
-
   },
-
 
 
   addToArray: function (array, key, versions, url) {
