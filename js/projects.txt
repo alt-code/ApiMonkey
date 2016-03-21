@@ -8,3 +8,7 @@ Initial list of sample projects to test:
 6. connect              https://github.com/senchalabs/connect
 7. node-plog            https://github.com/airbnb/node-plog-client
 8. zookeeper-client     https://github.com/yahoo/node-zookeeper-client
+9.                      https://github.com/contra/nodecast
+10.                     https://github.com/pencilblue/pencilblue
+11.                     https://github.com/NodeBB/NodeBB
+12.                     https://github.com/jaredallard/nexe
