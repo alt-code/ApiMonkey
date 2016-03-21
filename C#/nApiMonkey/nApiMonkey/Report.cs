@@ -30,7 +30,7 @@ namespace nApiMonkey
         }
         public void writeOriginalReport(string projectPath)
         {
-            var errorCount = File.ReadLines(projectPath + @"\" + BUILD_ERROR_FILE).Count();
+             var errorCount = File.ReadLines(projectPath + @"\" + BUILD_ERROR_FILE).Count();
             var warningCount = File.ReadLines(projectPath + @"\" + BUILD_WARN_FILE).Count();
             Console.WriteLine("Errors: " + errorCount + " Warnings: " + warningCount);
 

@@ -13,53 +13,64 @@ namespace nApiMonkey
     {
         static void Main(string[] args)
         {
-            string project_name = "Hangfire.Core";
-            string project_path = @"G:\samples_nuget\";
+            string project_name = "Hangfire";
+            string project_path = @"G:\samples\";
             string sandbox_path = @"G:\nuget_sandbox_new";
-            
 
-            string oldRootSol = @"G:\samples_nuget\Hangfire";
-            string oldProjectPath = @"G:\samples_nuget\Hangfire\src\" + project_name;
-            //cloning a repo
-            //string repo = "";
-            // System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\gitcmd.sh", project_path).WaitForExit();
-            System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldProjectPath + " " + project_name + ".csproj").WaitForExit();
+            string oldRootSol = @"G:\samples\Hangfire";
+            string oldProjectPath = @"G:\samples_nuget\Hangfire\" + project_name;
+                        //cloning a repo
+                        //string repo = "";
+                     //    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\gitcmd.sh", oldRootSol).WaitForExit();
+
             Report repo = new Report();
             repo.ReportLocation = project_path;
             repo.ReportName = project_name + "Report.md";
-            repo.writeOriginalReport(oldProjectPath);
 
-            PackageConfigReader oldConfReader = new PackageConfigReader();
-            string oldPathToPackages = oldProjectPath + @"\packages.config";
-            List<PackageElement> confPackages = oldConfReader.readConfig(oldPathToPackages);
-            List<PackageElement> update = checkUpdate(confPackages);
+            PackageConfigReader reader = new PackageConfigReader();
+            List<string> packageFilePaths=reader.readAllConfigs(@"G:\samples\Hangfire");
+            Dictionary<PackageElement, List<string>> dictionary= reader.readConfig(packageFilePaths,oldRootSol);
+              
+           // PackageConfigReader oldConfReader = new PackageConfigReader();
+           // string oldPathToPackages = oldProjectPath + @"\packages.config";
+           // List<PackageElement> confPackages = oldConfReader.readConfig(oldPathToPackages);
+            List<PackageElement> update = checkUpdate(new List<PackageElement>(dictionary.Keys));
+            
             if (update == null) Console.Write("nahi");
             else
             {
                 foreach (PackageElement e in update)
                 {
-                    DirectoryInfo d = new DirectoryInfo(Directory.GetCurrentDirectory());
-                    PackageConfigReader newConfReader = new PackageConfigReader();
-                    string newRootSol = sandbox_path + @"\" + project_name + @"_" + e.Packageid.Substring(0, 4) + e.Version.ToNormalizedString();
-                    Console.WriteLine("new root sol " + newRootSol);
-                    string newProjectPath = newRootSol + @"\src\" + project_name;
+                    List<string> paths=dictionary[e];
+                    string newRootSol = sandbox_path + @"\" + project_name + @"_" + e.Packageid.Substring(0, 3) + e.Version.ToNormalizedString();
+                    
+                    //string newProjectPath = newRootSol + @"\" + project_name;
                     Directory.CreateDirectory(newRootSol);
                     System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\script.bat", oldRootSol + " " + newRootSol).WaitForExit();
-                    string newPathToPackages = newProjectPath + @"\packages.config";
-                    Console.WriteLine(e.Packageid + " " + e.Version);
-                    newConfReader.writeToConfig(newPathToPackages, e.Packageid, SemanticVersion.Parse(PACKAGE_OLD), e.Version);
-                    UpdateCommand updateCmd = new UpdateCommand();
-                    updateCmd.Execute(e.Packageid, newProjectPath + @"\" + project_name + ".csproj", e.Version, newRootSol + @"\packages");
-                    Console.ReadKey();
-                    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", newProjectPath + " " + project_name + ".csproj").WaitForExit();
-                    
+                    foreach (string projectPath in paths)
+                    {
+                        PackageConfigReader newConfReader = new PackageConfigReader();
+
+                        string newPathToPackages = newRootSol + projectPath + @"packages.config";
+                        string newProjectPath = newRootSol + projectPath;
+                        Console.WriteLine("new project path" + newProjectPath);
+                        Console.WriteLine(e.Packageid + " old " + SemanticVersion.Parse(PACKAGE_OLD) + " new " + e.Version);
+                        newConfReader.writeToConfig(newPathToPackages, e.Packageid, SemanticVersion.Parse(PACKAGE_OLD), e.Version);
+                        string project=Directory.EnumerateFiles(newProjectPath, "*.csproj").First();
+                        UpdateCommand updateCmd = new UpdateCommand();
+                        updateCmd.Execute(e.Packageid, project, e.Version, newRootSol + @"\packages");
+                    }
+                    //Console.ReadKey();
+                    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", newRootSol + " " + project_name + ".sln").WaitForExit();
+
                     //Read build output and generate a report
-                    repo.writeBuildReport(newProjectPath, e.Packageid , e.Version);
+                    repo.writeBuildReport(newRootSol, e.Packageid, e.Version);
                 }
 
             }
-
-
+            System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldProjectPath + " " + project_name + ".csproj").WaitForExit();
+            repo.writeOriginalReport(oldProjectPath);
+            Console.ReadKey();
         }
         static string PACKAGE_OLD;
         private static List<PackageElement> checkUpdate(List<PackageElement> confPackages)
@@ -110,10 +121,11 @@ namespace nApiMonkey
 
                     }
                 }
-                if (single) return newVersions;
+                
             }
+            if (single) return newVersions;
             return null;
         }
-
+        
     }
 }

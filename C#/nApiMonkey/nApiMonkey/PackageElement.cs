@@ -45,5 +45,18 @@ namespace nApiMonkey
                 version = value;
             }
         }
+
+            public override bool Equals(object obj)
+            {
+                PackageElement item = obj as PackageElement;
+
+            return (item.Packageid == this.Packageid);// && item.Version == this.Version);
+            }
+
+            public override int GetHashCode()
+            {
+                return Packageid.GetHashCode();
+            
+            }
     }
 }

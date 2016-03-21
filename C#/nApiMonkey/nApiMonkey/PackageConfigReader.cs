@@ -10,25 +10,55 @@ namespace nApiMonkey
 {
     class PackageConfigReader
     {
-       public List<PackageElement> readConfig(string fileName)
+       public Dictionary<PackageElement, List<string>> readConfig(List<string> packageFilePaths, string root)//string path)
         {
-            List<PackageElement> element = new List<PackageElement> ();
-            var file = new PackageReferenceFile(fileName);
-            foreach (PackageReference packageReference in file.GetPackageReferences())
+            Dictionary<PackageElement, List<string>> map = new Dictionary<PackageElement, List<string>>();
+            string fileName;
+            foreach (string path in packageFilePaths)
             {
-                element.Add(new PackageElement(packageReference.Id, packageReference.Version));
-                Console.WriteLine("Id={0}, Version={1}", packageReference.Id, packageReference.Version);
+                if (path.Contains(@"\.nuget") || path.Contains(@"\packages"))
+                    continue;
+                fileName = path + "packages.config";
+                var file = new PackageReferenceFile(fileName);
+
+                string path1 = path.Replace(root, "");
+                Console.WriteLine(path1);
+                foreach (PackageReference packageReference in file.GetPackageReferences())
+                {
+                    //element.Add(new PackageElement(packageReference.Id, packageReference.Version));
+                    PackageElement pe = new PackageElement(packageReference.Id, packageReference.Version);
+                    if (!map.ContainsKey(pe))
+                    {
+                        Console.WriteLine(packageReference.Id);
+                        List<string> ans = new List<string>();
+                        ans.Add(path1);
+                        map.Add(pe, ans);
+                    }
+                    else
+                    {
+                        List<string> ans= map[pe];
+                        ans.Add(path1);
+                        map[pe] = ans;
+                        Console.WriteLine(" contains key "+ans.Count);
+                    }
+                    
+                    Console.WriteLine("PackageId={0}, Version={1}", packageReference.Id, packageReference.Version);
+                }
             }
-            
-            return element;
+
+            return map;
         }
-        public void readAllConfigs(string root)
+        public List<string> readAllConfigs(string root)
         {
+            List<string> configList=new List<string>();
+            string[] delimiter = new string[] {"packages.config"};
               foreach (string fileName in Directory.EnumerateFiles(root, "packages.config", SearchOption.AllDirectories))
               {
-                Console.WriteLine(fileName);
+                Console.WriteLine(fileName.Split(delimiter, System.StringSplitOptions.None)[0]);
+                configList.Add(fileName.Split(delimiter, System.StringSplitOptions.None)[0]);
                 //1readConfig(fileName);
               }
+            return configList;
         }
 
         public bool writeToConfig(string fileName, string packageId, SemanticVersion oldversion, SemanticVersion newversion)
