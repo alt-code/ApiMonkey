@@ -44,12 +44,12 @@ utilities.initialSetup(repo, projectName)
         console.log('Check for cache done.');
 
         // Get version dependencies
-        var info = getDependencyVersions(projectRoot,dependencies, dependenciesNames);
-        var outdated = info.outdated;
-        var allDependencies = info.allDependencies;
+        var info = getDependencyVersions(projectRoot,dependencies, dependenciesNames, map, function(outdated, allDependencies)
+        {
+            // This will iterate over all outdated dependencies and create a sandbox to test each one.
+            createSandboxAndTestDependency(0, outdated, projectRoot, reportPath, testCmd, config, initialTestsResult, baseVersion);
 
-        // This will iterate over all outdated dependencies and create a sandbox to test each one.
-        createSandboxAndTestDependency(0, outdated, projectRoot, reportPath, testCmd, config, initialTestsResult, baseVersion);
+        });
     });
 
 })
@@ -61,7 +61,7 @@ function errorAndCleanup(err)
     //});
 }
 
-function getDependencyVersions(projectRoot,dependencies, dependenciesNames)
+function getDependencyVersions(projectRoot,dependencies, dependenciesNames, map, onDone)
 {
     var outdated = []
     var allDependencies = []
@@ -108,9 +108,8 @@ function getDependencyVersions(projectRoot,dependencies, dependenciesNames)
             fs.writeFileSync(path.join(projectRoot,'cache.json'), JSON.stringify(allDependencies));
             console.log('Outdated dependencies: ' + JSON.stringify(outdated));
         }
+        onDone(outdated, allDependencies);
     });
-
-    return {outdated: outdated, allDependencies: allDependencies };    
 }
 
 
