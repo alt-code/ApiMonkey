@@ -73,7 +73,7 @@ module.exports = {
     var config = {
       env: env
     }
-    childProcess.exec('touch report.md && git clone ' + url + ' ' + projectName + ' && cd ' + projectName + ' && npm install', function (err, stdout, stderr) {
+    childProcess.exec('rm -rf ' + projectName + ' && touch report.md && git clone ' + url + ' ' + projectName + ' && cd ' + projectName + ' && npm install', function (err, stdout, stderr) {
       callback(config, err)
     })
   },
