@@ -29,7 +29,7 @@ namespace nApiMonkey
                     PackageElement pe = new PackageElement(packageReference.Id, packageReference.Version);
                     if (!map.ContainsKey(pe))
                     {
-                        Console.WriteLine(packageReference.Id);
+                        Console.WriteLine("add to map: "+packageReference.Id);
                         List<string> ans = new List<string>();
                         ans.Add(path1);
                         map.Add(pe, ans);
@@ -39,7 +39,7 @@ namespace nApiMonkey
                         List<string> ans= map[pe];
                         ans.Add(path1);
                         map[pe] = ans;
-                        Console.WriteLine(" contains key "+ans.Count);
+                        Console.WriteLine(" contains key "+ packageReference .Id+" "+ ans.Count);
                     }
                     
                     Console.WriteLine("PackageId={0}, Version={1}", packageReference.Id, packageReference.Version);
@@ -64,6 +64,7 @@ namespace nApiMonkey
         public bool writeToConfig(string fileName, string packageId, SemanticVersion oldversion, SemanticVersion newversion)
         {
             var file = new PackageReferenceFile(fileName);
+            Console.WriteLine("deleteing " + oldversion + " with " + newversion);
             file.DeleteEntry(packageId, oldversion);
             file.AddEntry(packageId, newversion);
             return true;
