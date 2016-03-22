@@ -28,6 +28,12 @@ namespace nApiMonkey
                     sw.WriteLine("");
             }
         }
+
+        internal void removeIfExists()
+        {
+            File.Delete(reportLocation + @"\" + reportName);
+        }
+
         public void writeOriginalReport(string projectPath)
         {
              var errorCount = File.ReadLines(projectPath + @"\" + BUILD_ERROR_FILE).Count();

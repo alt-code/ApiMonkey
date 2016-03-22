@@ -26,15 +26,20 @@ namespace nApiMonkey
             Report repo = new Report();
             repo.ReportLocation = project_path;
             repo.ReportName = project_name + "Report.md";
+            repo.removeIfExists();
+
+            System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldRootSol+" "+ project_name + ".sln").WaitForExit();
+            repo.writeOriginalReport(oldRootSol);
 
             PackageConfigReader reader = new PackageConfigReader();
             List<string> packageFilePaths=reader.readAllConfigs(@"G:\samples\Hangfire");
             Dictionary<PackageElement, List<string>> dictionary= reader.readConfig(packageFilePaths,oldRootSol);
-              
-           // PackageConfigReader oldConfReader = new PackageConfigReader();
-           // string oldPathToPackages = oldProjectPath + @"\packages.config";
-           // List<PackageElement> confPackages = oldConfReader.readConfig(oldPathToPackages);
-            List<PackageElement> update = checkUpdate(new List<PackageElement>(dictionary.Keys));
+
+            // PackageConfigReader oldConfReader = new PackageConfigReader();
+            // string oldPathToPackages = oldProjectPath + @"\packages.config";
+            // List<PackageElement> confPackages = oldConfReader.readConfig(oldPathToPackages);
+            List<PackageElement> oldlist = new List<PackageElement>(dictionary.Keys);
+            List<PackageElement> update = checkUpdate(oldlist);
             
             if (update == null) Console.Write("nahi");
             else
@@ -42,7 +47,7 @@ namespace nApiMonkey
                 foreach (PackageElement e in update)
                 {
                     List<string> paths=dictionary[e];
-                    string newRootSol = sandbox_path + @"\" + project_name + @"_" + e.Packageid.Substring(0, 3) + e.Version.ToNormalizedString();
+                    string newRootSol = sandbox_path + @"\" + project_name + @"_" + e.Packageid.Substring(0, e.Packageid.Length/2) + e.Version.ToNormalizedString();
                     
                     //string newProjectPath = newRootSol + @"\" + project_name;
                     Directory.CreateDirectory(newRootSol);
@@ -50,7 +55,6 @@ namespace nApiMonkey
                     foreach (string projectPath in paths)
                     {
                         PackageConfigReader newConfReader = new PackageConfigReader();
-
                         string newPathToPackages = newRootSol + projectPath + @"packages.config";
                         string newProjectPath = newRootSol + projectPath;
                         Console.WriteLine("new project path" + newProjectPath);
@@ -68,8 +72,7 @@ namespace nApiMonkey
                 }
 
             }
-            System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldProjectPath + " " + project_name + ".csproj").WaitForExit();
-            repo.writeOriginalReport(oldProjectPath);
+
             Console.ReadKey();
         }
         static string PACKAGE_OLD;
@@ -112,9 +115,9 @@ namespace nApiMonkey
                             {
                                 if (float.Parse(pv[2]) < float.Parse(repov[2]))
                                 {
-                                    Console.WriteLine("updatepatch " + rpackage.Id + currRepoVersion);
-                                    newVersions.Add(new PackageElement(rpackage.Id, NuGet.SemanticVersion.Parse(currRepoVersion)));
-                                    single = true;
+                                   // Console.WriteLine("updatepatch " + rpackage.Id + currRepoVersion);
+                                   // newVersions.Add(new PackageElement(rpackage.Id, NuGet.SemanticVersion.Parse(currRepoVersion)));
+                                   // single = true;
                                 }
                             }
                         }
