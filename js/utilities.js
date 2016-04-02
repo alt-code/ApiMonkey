@@ -3,7 +3,7 @@ var path = require('path')
 var mkdirp = require('mkdirp')
 var childProcess = require('child_process')
 var parser = require('xml2json')
-var Promise = require("bluebird")
+var Promise = require('bluebird')
 
 // https://maymay.net/blog/2008/06/15/ridiculously-simple-javascript-version-string-to-object-parser/
 function parseVersionString (str) {
@@ -24,8 +24,8 @@ function parseVersionString (str) {
 
 var cmdMap = {}
 
-// base install 
-var PROJECTS_ROOT = "projects";
+// base install
+var PROJECTS_ROOT = 'projects'
 
 // multiple test suites can be added here
 
@@ -77,36 +77,31 @@ module.exports = {
     var env = process.env
     env.PATH = env.PATH + ':node_modules/.bin'
     var config = {
-        env: env,
-        stdio: ['pipe', 'pipe', 'pipe']
+      env: env,
+      stdio: ['pipe', 'pipe', 'pipe']
     }
     // Create projects directory
-    var baseVersion = path.join(PROJECTS_ROOT, projectName, "baseVersion");
-    mkdirp.sync(baseVersion);
+    var baseVersion = path.join(PROJECTS_ROOT, projectName, 'baseVersion')
+    mkdirp.sync(baseVersion)
 
     // Reset report
-    var reportPath = path.join(PROJECTS_ROOT, projectName, "report.md");
-    fs.closeSync(fs.openSync(reportPath, 'w'));
+    var reportPath = path.join(PROJECTS_ROOT, projectName, 'report.md')
+    fs.closeSync(fs.openSync(reportPath, 'w'))
 
-    return new Promise(function (resolve, reject) 
-    {
-        // git clone into baseVersion (if doesn't already exists)
-        if( !fs.existsSync( path.join(baseVersion,'.git') ))
-        {
-            childProcess.execSync('git clone ' + url + ' ' + ' ' + baseVersion);
-            // Install 
-            childProcess.exec('cd ' + baseVersion + '&& npm install', function(err, stdout, stderr) {
-                // 
-                resolve([config, PROJECTS_ROOT, reportPath, baseVersion, err]);
-            });
-        }
-        else
-        {
-            resolve([config, PROJECTS_ROOT, reportPath, baseVersion, null]);
-        }
-    });
+    return new Promise(function (resolve, reject) {
+      // git clone into baseVersion (if doesn't already exists)
+      if (!fs.existsSync(path.join(baseVersion, '.git'))) {
+        childProcess.execSync('git clone ' + url + ' ' + ' ' + baseVersion)
+        // Install
+        childProcess.exec('cd ' + baseVersion + '&& npm install', function (err, stdout, stderr) {
+          //
+          resolve([config, PROJECTS_ROOT, reportPath, baseVersion, err])
+        })
+      } else {
+        resolve([config, PROJECTS_ROOT, reportPath, baseVersion, null])
+      }
+    })
   },
-
 
   addToArray: function (array, key, versions, url) {
     array.push({
@@ -116,32 +111,29 @@ module.exports = {
     return array
   },
 
-  checkForCache: function (cachePath) 
-  {
-    var map = {};
-    var cache = path.join(cachePath, "cache.json");
-    if (fs.existsSync(cache))
-    {
-        var cacheData = JSON.parse(fs.readFileSync(cache, 'utf8'));
-        for (var i in cacheData) {
-            var obj = {};
-            obj.versions = cacheData[i].versions;
-            obj.url = cacheData[i].url;
-            map[cacheData[i].name] = obj;
-        }
+  checkForCache: function (cachePath) {
+    var map = {}
+    var cache = path.join(cachePath, 'cache.json')
+    if (fs.existsSync(cache)) {
+      var cacheData = JSON.parse(fs.readFileSync(cache, 'utf8'))
+      for (var i in cacheData) {
+        var obj = {}
+        obj.versions = cacheData[i].versions
+        obj.url = cacheData[i].url
+        map[cacheData[i].name] = obj
+      }
     } else {
       fs.writeFileSync(cache, '')
     }
-    return map;
+    return map
   },
 
   parsePackageJSON: function (path, callback) {
     try {
-        var data = fs.readFileSync(path + '/package.json', 'utf8');
-        return JSON.parse(data);
-    } 
-    catch (e) {
-        return null;
+      var data = fs.readFileSync(path + '/package.json', 'utf8')
+      return JSON.parse(data)
+    } catch (e) {
+      return null
     }
   },
 
@@ -166,12 +158,12 @@ module.exports = {
         result.failures += parseInt(json.testsuite.failures)
       }
     }
-    return result;
+    return result
   },
 
   removeSandbox: function (projectName, callback) {
-    //fs.exec('rm report.md && rm -rf ' + projectName, function (err, stdout, stderr) {
-      callback()
-    //})
+    // fs.exec('rm report.md && rm -rf ' + projectName, function (err, stdout, stderr) {
+    callback()
+  // })
   }
 }
