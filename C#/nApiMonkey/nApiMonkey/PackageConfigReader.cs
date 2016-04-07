@@ -14,9 +14,11 @@ namespace nApiMonkey
         {
             Dictionary<PackageElement, List<string>> map = new Dictionary<PackageElement, List<string>>();
             string fileName;
+            Console.WriteLine("In read  config");
             foreach (string path in packageFilePaths)
             {
-                if (path.Contains(@"\.nuget") || path.Contains(@"\packages"))
+                //Filter config files from installed libraries
+                if (path.Contains(@"\.nuget") || path.Contains(@"\packages") || path.Contains(@"\samples\") || path.Contains(@"\Samples\"))
                     continue;
                 fileName = path + "packages.config";
                 var file = new PackageReferenceFile(fileName);
@@ -50,6 +52,7 @@ namespace nApiMonkey
         }
         public List<string> readAllConfigs(string root)
         {
+            Console.WriteLine("In read all config");
             List<string> configList=new List<string>();
             string[] delimiter = new string[] {"packages.config"};
               foreach (string fileName in Directory.EnumerateFiles(root, "packages.config", SearchOption.AllDirectories))

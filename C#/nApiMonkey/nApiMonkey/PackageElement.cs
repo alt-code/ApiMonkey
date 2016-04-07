@@ -13,13 +13,19 @@ namespace nApiMonkey
         string packageid;
         //string version;
         private SemanticVersion version;
-
+        //optional version for storing oler versions from config file.
+        private SemanticVersion old_version;
         public PackageElement(string id, SemanticVersion version1)
         {
             this.Packageid = id;
             this.Version = version1;
         }
-
+        public PackageElement(string id, SemanticVersion version1, SemanticVersion oversion)
+        {
+            this.Packageid = id;
+            this.Version = version1;
+            this.old_version = oversion;
+        }
         public string Packageid
         {
             get
@@ -45,8 +51,21 @@ namespace nApiMonkey
                 version = value;
             }
         }
+        public SemanticVersion OldVersion
+        {
+            get
+            {
+                return old_version;
+            }
 
-            public override bool Equals(object obj)
+            set
+            {
+                old_version = value;
+            }
+        }
+
+        //Package elements are considered as equal if they have same package names. Versions can be different.
+        public override bool Equals(object obj)
             {
                 PackageElement item = obj as PackageElement;
 

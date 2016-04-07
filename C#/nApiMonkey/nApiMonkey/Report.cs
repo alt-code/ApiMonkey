@@ -14,7 +14,7 @@ namespace nApiMonkey
         const string BUILD_WARN_FILE = "BuildWarnings.log";
         string reportLocation;
         string reportName;
-        public void writeBuildReport(string newprojectPath, string packageid, SemanticVersion version)
+        public void writeBuildReport(string newprojectPath, string packageid, SemanticVersion version, StringBuilder testResult)
         {
             var errorCount = File.ReadLines(newprojectPath+ @"\"+BUILD_ERROR_FILE).Count();
             var warningCount = File.ReadLines(newprojectPath + @"\"+BUILD_WARN_FILE).Count();
@@ -25,7 +25,9 @@ namespace nApiMonkey
                     sw.WriteLine("Package: "+packageid+" Version: "+version);
                     sw.WriteLine("Errors: "+errorCount);
                     sw.WriteLine("Warnings: "+warningCount);
-                    sw.WriteLine("");
+                sw.WriteLine("Test Results: ");
+                sw.WriteLine(testResult);
+                sw.WriteLine("");
             }
         }
 
