@@ -6,33 +6,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-/*
-            string project_name = "Hangfire";
-            string project_path = @"G:\samples";
-            string sandbox_path = @"G:\nuget_sandbox_new";
-            string oldRootSol = @"G:\samples\Hangfire";
 
-            */
 namespace nApiMonkey
 {
     class Program
     {
         static void Main(string[] args)
         {
-            string project_name = "Bonobo.Git.Server";
-            string project_path = @"G:\samples_proj";
-            string sandbox_path = @"G:\nuget_sandbox_new";
-            string oldRootSol = @"G:\samples_proj\Bonobo-Git-Server";
-            string testLocation = @"Bonobo.Git.Server.Test\bin\Debug\Bonobo.Git.Server.Test.dll";
+            string project_name = "";
+            string project_path = @"";
+            string sandbox_path = @"";
+            string oldRootSol = @"";
+            string testLocation = @"";
 
-            //   System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\gitcmd.sh", project_path).WaitForExit();
+            //   System.Diagnostics.Process.Start(@"gitcmd.sh", project_path).WaitForExit();
 
             Report repo = new Report();
             repo.ReportLocation = project_path;
             repo.ReportName = project_name + "Report.md";
             repo.removeIfExists();
 
-            System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldRootSol + " " + project_name + ".sln " + testLocation).WaitForExit();
+            System.Diagnostics.Process.Start(@"scripts\build.bat", oldRootSol + " " + project_name + ".sln " + testLocation).WaitForExit();
             repo.writeOriginalReport(oldRootSol);
 
             PackageConfigReader reader = new PackageConfigReader();
@@ -55,7 +49,7 @@ namespace nApiMonkey
                     string newRootSol = sandbox_path + @"\" + project_name + @"_" + e.Packageid.Substring(0, e.Packageid.Length/2+1) + e.Version.ToNormalizedString();
                     //string newProjectPath = newRootSol + @"\" + project_name;
                     Directory.CreateDirectory(newRootSol);
-                    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\script.bat", oldRootSol + " " + newRootSol+" "+ project_name + ".sln ").WaitForExit();
+                    System.Diagnostics.Process.Start(@"\scripts\script.bat", oldRootSol + " " + newRootSol+" "+ project_name + ".sln ").WaitForExit();
                     foreach (string projectPath in paths)
                     {
                         PackageConfigReader newConfReader = new PackageConfigReader();
@@ -70,7 +64,7 @@ namespace nApiMonkey
                         updateCmd.Execute(e.Packageid, project, e.Version, newRootSol + @"\packages");
                     }
                     //Console.ReadKey();
-                    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", newRootSol + " " + project_name + ".sln "+ testLocation).WaitForExit();
+                    System.Diagnostics.Process.Start(@"\scripts\build.bat", newRootSol + " " + project_name + ".sln "+ testLocation).WaitForExit();
 
                     //Read build output and generate a report
                     testResult=tr.read(newRootSol+@"\testResults.trx");
