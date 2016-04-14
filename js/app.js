@@ -9,6 +9,7 @@ var utilities = require('./utilities.js')
 var repo = process.argv[2]
 var projectName = process.argv[3]
 var passingDepVersions = {}
+var nodeVersions = ['v0.10.0', 'v0.11.0', 'v0.12.0', 'v4.0.0', 'v5.0.0', 'v5.10.1']
 
 utilities.initialSetup(repo, projectName)
   .spread(function (config, PROJECTS_ROOT, reportPath, baseVersion, err) {
@@ -38,14 +39,26 @@ utilities.initialSetup(repo, projectName)
       var initialTestsResult = utilities.getTestResults(output)
       console.log('Initial tests results: ' + JSON.stringify(initialTestsResult))
 
-      map = utilities.checkForCache(projectRoot)
-      console.log('Check for cache done.')
+      console.log('Testing different node versions.')
 
-      // Get version dependencies
-      var info = getDependencyVersions(projectRoot, dependencies, dependenciesNames, map, function (outdated, allDependencies) {
-        // This will iterate over all outdated dependencies and create a sandbox to test each one.
-        createSandboxAndTestDependency(0, outdated, projectRoot, reportPath, testCmd, config, initialTestsResult, baseVersion, dependencies)
-      })
+      function checkNodeVersions (i, projectRoot, dependencies, dependenciesNames, reportPath, testCmd, config, initialTestsResult, baseVersion) {
+        if (i == nodeVersions.length) {
+          // Get version dependencies
+          map = utilities.checkForCache(projectRoot)
+          console.log('Check for cache done.')
+          var info = getDependencyVersions(projectRoot, dependencies, dependenciesNames, map, function (outdated, allDependencies) {
+            // This will iterate over all outdated dependencies and create a sandbox to test each one.
+            createSandboxAndTestDependency(0, outdated, projectRoot, reportPath, testCmd, config, initialTestsResult, baseVersion, dependencies)
+          })
+        } else {
+          childProcess.exec('cd ' + baseVersion + '; . ~/.nvm/nvm.sh; nvm install ' + nodeVersions[i] + '; ' + testCmd, function (err, stdout, stderr) {
+            var testRes = utilities.getTestResults(stdout)
+            console.log('Test results with node version ' + nodeVersions[i] + ': ' + JSON.stringify(testRes))
+            checkNodeVersions(i + 1, projectRoot, dependencies, dependenciesNames, reportPath, testCmd, config, initialTestsResult, baseVersion)
+          })
+        }
+      }
+      checkNodeVersions(0, projectRoot, dependencies, dependenciesNames, reportPath, testCmd, config, initialTestsResult, baseVersion)
     })
   })
 
