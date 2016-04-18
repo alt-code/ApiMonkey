@@ -6,24 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-/*
-            string project_name = "Hangfire";
-            string project_path = @"G:\samples";
-            string sandbox_path = @"G:\nuget_sandbox_new";
-            string oldRootSol = @"G:\samples\Hangfire";
 
-            */
 namespace nApiMonkey
 {
     class Program
     {
         static void Main(string[] args)
         {
-            string project_name = "Bonobo.Git.Server";
-            string project_path = @"G:\samples_proj";
-            string sandbox_path = @"G:\nuget_sandbox_new";
-            string oldRootSol = @"G:\samples_proj\Bonobo-Git-Server";
-            string testLocation = @"Bonobo.Git.Server.Test\bin\Debug\Bonobo.Git.Server.Test.dll";
+            string project_name = "";
+            string project_path = @"";
+            string sandbox_path = @"";
+            string oldRootSol = @"";
+            string testLocation = @"";
 
             //   System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\gitcmd.sh", project_path).WaitForExit();
 
@@ -31,12 +25,16 @@ namespace nApiMonkey
             repo.ReportLocation = project_path;
             repo.ReportName = project_name + "Report.md";
             repo.removeIfExists();
+            TRXReader tr = new TRXReader();
+            StringBuilder testResultOrig = new StringBuilder();
 
             System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldRootSol + " " + project_name + ".sln " + testLocation).WaitForExit();
-            repo.writeOriginalReport(oldRootSol);
 
+            testResultOrig = tr.read(oldRootSol + @"\testresults.trx");
+            repo.writeOriginalReport(oldRootSol,testResultOrig);
+           
             PackageConfigReader reader = new PackageConfigReader();
-            TRXReader tr = new TRXReader();
+            
             List<string> packageFilePaths=reader.readAllConfigs(oldRootSol);
             Dictionary<PackageElement, List<string>> dictionary= reader.readConfig(packageFilePaths,oldRootSol);
 
@@ -58,30 +56,33 @@ namespace nApiMonkey
                     System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\script.bat", oldRootSol + " " + newRootSol+" "+ project_name + ".sln ").WaitForExit();
                     foreach (string projectPath in paths)
                     {
+                        Console.WriteLine("Updating " + projectPath);
                         PackageConfigReader newConfReader = new PackageConfigReader();
                         string newPathToPackages = newRootSol + projectPath + @"packages.config";
                         string newProjectPath = newRootSol + projectPath;
-                        Console.WriteLine("new project path" + newProjectPath);
-                        Console.WriteLine(e.Packageid + " old " + e.OldVersion + " new " + e.Version);
-                        newConfReader.writeToConfig(newPathToPackages, e.Packageid, e.OldVersion, e.Version);
-                        string project=Directory.EnumerateFiles(newProjectPath, "*.csproj?").First();
-                       
+                        //  Console.WriteLine("new project path" + newProjectPath);
+                        //Console.WriteLine(e.Packageid + " old " + e.OldVersion + " new " + e.Version);
+                        string project = Directory.EnumerateFiles(newProjectPath, "*.csproj?").First();
+
                         UpdateCommand updateCmd = new UpdateCommand();
                         updateCmd.Execute(e.Packageid, project, e.Version, newRootSol + @"\packages");
+                        newConfReader.writeToConfig(newPathToPackages, e.Packageid, e.Version);
                     }
-                    //Console.ReadKey();
-                    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", newRootSol + " " + project_name + ".sln "+ testLocation).WaitForExit();
+                    /*Ithun
+                    UpdateCommand updateCmd = new UpdateCommand();
+                    updateCmd.ExecuteNew(newRootSol,e.Packageid, paths, e.Version, newRootSol + @"\packages");
+                    //Ith paryant*/
 
+                    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", newRootSol + " " + project_name + ".sln "+ testLocation).WaitForExit();
+                    tr = new TRXReader();
                     //Read build output and generate a report
-                    testResult=tr.read(newRootSol+@"\testResults.trx");
+                    testResult =tr.read(newRootSol+@"\testResults.trx");
                     repo.writeBuildReport(newRootSol, e.Packageid, e.Version,testResult);
                 }
-
             }
-
             Console.ReadKey();
         }
-        static string PACKAGE_OLD;
+       
         private static List<PackageElement> checkUpdate(List<PackageElement> confPackages)
         {
             bool single = false;
@@ -89,49 +90,55 @@ namespace nApiMonkey
             List<PackageElement> newVersions = new List<PackageElement>();
             foreach (PackageElement confelem in confPackages)
             {
-                //write to cache TODO
-                string packageVersion = confelem.Version.ToNormalizedString();
-                string[] pv = packageVersion.Split('.');
-                var repoResults = listCmd.Execute(confelem.Packageid);
-              //  PACKAGE_OLD = packageVersion;
-                Console.WriteLine("Getting all versions of package " + confelem.Packageid);
-                foreach (var rpackage in repoResults)
-                {
-                    if (rpackage.IsReleaseVersion())
+                if (confelem.Packageid.Equals("xunit"))
+                {//|| confelem.Packageid.Equals("RabbitMQ.Client")){
+                    //write to cache TODO
+                    string packageVersion = confelem.Version.ToNormalizedString();
+                    string[] pv = packageVersion.Split('.');
+                    var repoResults = listCmd.Execute(confelem.Packageid);
+                    //  PACKAGE_OLD = packageVersion;
+                    Console.WriteLine("Getting all versions of package " + confelem.Packageid);
+                    foreach (var rpackage in repoResults)
                     {
-                        // Console.WriteLine(rpackage.Id + rpackage.Version);
-                        string currRepoVersion = rpackage.Version.ToNormalizedString();
-                        // PACKAGE_OLD = currRepoVersion;
-                        string[] repov = currRepoVersion.Split('.');
-                        if (float.Parse(pv[0]) < float.Parse(repov[0]))//major version
+                        if (rpackage.IsReleaseVersion())
                         {
-                            Console.WriteLine("updatemajor " + rpackage.Id + currRepoVersion);
-                            newVersions.Add(new PackageElement(rpackage.Id, NuGet.SemanticVersion.Parse(currRepoVersion), NuGet.SemanticVersion.Parse(packageVersion)));
-                            single = true;
-                        }
-                        else if (float.Parse(pv[0]) == float.Parse(repov[0]))
-                        {
-                            if (float.Parse(pv[1]) < float.Parse(repov[1]))
+                            // Console.WriteLine(rpackage.Id + rpackage.Version);
+                            string currRepoVersion = rpackage.Version.ToNormalizedString();
+                            // PACKAGE_OLD = currRepoVersion;
+                            string[] repov = currRepoVersion.Split('.');
+                            if (float.Parse(pv[0]) < float.Parse(repov[0]))//major version
                             {
-                                Console.WriteLine("updateminor " + rpackage.Id + currRepoVersion);
+                                //Console.WriteLine("updatemajor " + rpackage.Id + currRepoVersion);
                                 newVersions.Add(new PackageElement(rpackage.Id, NuGet.SemanticVersion.Parse(currRepoVersion), NuGet.SemanticVersion.Parse(packageVersion)));
                                 single = true;
+                               // updatemajor = true;
                             }
-                            else if (float.Parse(pv[1]) == float.Parse(repov[1]))
+                            else if (float.Parse(pv[0]) == float.Parse(repov[0]))
                             {
-                               /* if (float.Parse(pv[2]) < float.Parse(repov[2]))
+                                if (float.Parse(pv[1]) < float.Parse(repov[1]))
                                 {
-                                    Console.WriteLine("updatepatch " + rpackage.Id + currRepoVersion);
+                                    //  Console.WriteLine("updateminor " + rpackage.Id + currRepoVersion);
                                     newVersions.Add(new PackageElement(rpackage.Id, NuGet.SemanticVersion.Parse(currRepoVersion), NuGet.SemanticVersion.Parse(packageVersion)));
                                     single = true;
+
                                 }
-                                */
+                                else if (float.Parse(pv[1]) == float.Parse(repov[1]))
+                                {
+                                     if (float.Parse(pv[2]) < float.Parse(repov[2]))
+                                     {
+                                         Console.WriteLine("updatepatch " + rpackage.Id + currRepoVersion);
+                                         newVersions.Add(new PackageElement(rpackage.Id, NuGet.SemanticVersion.Parse(currRepoVersion), NuGet.SemanticVersion.Parse(packageVersion)));
+                                         single = true;
+                                     }
+                                     
+                                }
                             }
+
                         }
 
                     }
+                   // updatemajor = false;
                 }
-                
             }
             if (single) return newVersions;
             return null;
