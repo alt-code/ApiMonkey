@@ -19,7 +19,7 @@ namespace nApiMonkey
             string oldRootSol = @"";
             string testLocation = @"";
 
-            //   System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\gitcmd.sh", project_path).WaitForExit();
+            //   System.Diagnostics.Process.Start(@"gitcmd.sh", project_path).WaitForExit();
 
             Report repo = new Report();
             repo.ReportLocation = project_path;
@@ -29,7 +29,6 @@ namespace nApiMonkey
             StringBuilder testResultOrig = new StringBuilder();
 
             System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", oldRootSol + " " + project_name + ".sln " + testLocation).WaitForExit();
-
             testResultOrig = tr.read(oldRootSol + @"\testresults.trx");
             repo.writeOriginalReport(oldRootSol,testResultOrig);
            
@@ -53,7 +52,7 @@ namespace nApiMonkey
                     string newRootSol = sandbox_path + @"\" + project_name + @"_" + e.Packageid.Substring(0, e.Packageid.Length/2+1) + e.Version.ToNormalizedString();
                     //string newProjectPath = newRootSol + @"\" + project_name;
                     Directory.CreateDirectory(newRootSol);
-                    System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\script.bat", oldRootSol + " " + newRootSol+" "+ project_name + ".sln ").WaitForExit();
+                    System.Diagnostics.Process.Start(@"\scripts\script.bat", oldRootSol + " " + newRootSol+" "+ project_name + ".sln ").WaitForExit();
                     foreach (string projectPath in paths)
                     {
                         Console.WriteLine("Updating " + projectPath);
@@ -68,10 +67,8 @@ namespace nApiMonkey
                         updateCmd.Execute(e.Packageid, project, e.Version, newRootSol + @"\packages");
                         newConfReader.writeToConfig(newPathToPackages, e.Packageid, e.Version);
                     }
-                    /*Ithun
-                    UpdateCommand updateCmd = new UpdateCommand();
-                    updateCmd.ExecuteNew(newRootSol,e.Packageid, paths, e.Version, newRootSol + @"\packages");
-                    //Ith paryant*/
+                    //Console.ReadKey();
+                    System.Diagnostics.Process.Start(@"\scripts\build.bat", newRootSol + " " + project_name + ".sln "+ testLocation).WaitForExit();
 
                     System.Diagnostics.Process.Start(@"G:\new_demo\ApiMonkey\C#\nApiMonkey\nApiMonkey\scripts\build.bat", newRootSol + " " + project_name + ".sln "+ testLocation).WaitForExit();
                     tr = new TRXReader();
