@@ -14,11 +14,11 @@ namespace nApiMonkey
         {
             Dictionary<PackageElement, List<string>> map = new Dictionary<PackageElement, List<string>>();
             string fileName;
-            Console.WriteLine("In read  config");
+            Console.WriteLine("In read config");
             foreach (string path in packageFilePaths)
             {
-                //Filter config files from installed libraries
-                if (path.Contains(@"\.nuget") || path.Contains(@"\packages") || path.Contains(@"\samples\") || path.Contains(@"\Samples\"))
+                //Filter sample config files from installed libraries
+                if (path.Contains(@"\.nuget") || path.Contains(@"\packages") || path.Contains(@"\Docuentation\") || path.Contains(@"\Samples\"))
                     continue;
                 fileName = path + "packages.config";
                 var file = new PackageReferenceFile(fileName);
@@ -27,11 +27,10 @@ namespace nApiMonkey
                 Console.WriteLine(path1);
                 foreach (PackageReference packageReference in file.GetPackageReferences())
                 {
-                    //element.Add(new PackageElement(packageReference.Id, packageReference.Version));
                     PackageElement pe = new PackageElement(packageReference.Id, packageReference.Version);
                     if (!map.ContainsKey(pe))
                     {
-                        Console.WriteLine("add to map: "+packageReference.Id);
+                        //Console.WriteLine("add to map: "+packageReference.Id);
                         List<string> ans = new List<string>();
                         ans.Add(path1);
                         map.Add(pe, ans);
@@ -41,9 +40,8 @@ namespace nApiMonkey
                         List<string> ans= map[pe];
                         ans.Add(path1);
                         map[pe] = ans;
-                        Console.WriteLine(" contains key "+ packageReference .Id+" "+ ans.Count);
+                        //Console.WriteLine(" contains key "+ packageReference .Id+" "+ ans.Count);
                     }
-                    
                     Console.WriteLine("PackageId={0}, Version={1}", packageReference.Id, packageReference.Version);
                 }
             }
@@ -59,16 +57,14 @@ namespace nApiMonkey
               {
                 Console.WriteLine(fileName.Split(delimiter, System.StringSplitOptions.None)[0]);
                 configList.Add(fileName.Split(delimiter, System.StringSplitOptions.None)[0]);
-                //1readConfig(fileName);
               }
             return configList;
         }
 
-        public bool writeToConfig(string fileName, string packageId, SemanticVersion oldversion, SemanticVersion newversion)
+        public bool writeToConfig(string fileName, string packageId, SemanticVersion newversion)
         {
             var file = new PackageReferenceFile(fileName);
-            Console.WriteLine("deleteing " + oldversion + " with " + newversion);
-            file.DeleteEntry(packageId, oldversion);
+            file.DeleteEntry(packageId, null);
             file.AddEntry(packageId, newversion);
             return true;
         }

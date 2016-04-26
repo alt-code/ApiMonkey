@@ -12,41 +12,43 @@ namespace nApiMonkey
 {
     class UpdateCommand
     {
-        public void Execute(string packageid, string projectFile, SemanticVersion version, string packages)
+        public bool Execute(string packageid, string projectFile, SemanticVersion version, string packages)
         {
             try
             {
-                System.Console.WriteLine("package "+packageid);
-                System.Console.WriteLine("csporj " + projectFile);
-                System.Console.WriteLine("version "+version);
-                System.Console.WriteLine("packages "+packages);
+                System.Console.WriteLine("-------------------------------------");
+                System.Console.WriteLine("Project File " + projectFile);
+                System.Console.WriteLine("Package "+packageid);
+                System.Console.WriteLine("Version "+version);
+                
                 IPackageRepository repo = PackageRepositoryFactory.Default.CreateRepository("https://packages.nuget.org/api/v2");
                 var packagePathResolver = new DefaultPackagePathResolver(packages);
                 var packagesFolderFileSystem = new PhysicalFileSystem(packages);
                 var projectSystem = new MSBuildProjectSystem(projectFile);
                 var localRepository = new LocalPackageRepository(packagePathResolver, packagesFolderFileSystem);
                 var projectManager = new ProjectManager(repo, packagePathResolver, projectSystem, localRepository);
-                projectManager.RemovePackageReference(packageid);
+                
+                projectManager.RemovePackageReference(packageid,true,false);
                 projectManager.AddPackageReference(packageid, version, true, false);
                 projectSystem.Save();
 
-               // System.Console.WriteLine("Updating "+packages);
                 string filename = packageid + "." + version;
                 string[] s = Directory.GetFiles(packages+ @"\"+filename);
                 if (s.IsEmpty()) { System.Console.WriteLine("empty"); }
                 else
                 {
-                 //   System.Console.WriteLine("nupkg file: " + s.First());
                     var nupkgFile = new PhysicalFileSystem(s[0]);
                     ZipPackage z = new ZipPackage(s[0]);
                     z.ExtractContents(nupkgFile, packages + @"\" + filename);
                 } 
-                System.Console.Write("Successfully updated");
+                System.Console.WriteLine("Successfully updated");
+                return true;
             }
             catch (Exception e)
             {
                 System.Console.Write("failure");
                 System.Console.Write(e.StackTrace);
+                return false;
             }
 
         }

@@ -8,6 +8,7 @@ using System.IO;
 using Microsoft.TeamFoundation.TestManagement.Client;
 
 /*
+TRX Format:
 <ResultSummary outcome='Failed'>
 <Counters total='19' executed='19' passed='18' error='0' failed='1' timeout='0' aborted='0' inconclusive='0' passedButRunAborted='0' notRunnable='0' notExecuted='0' disconnected='0' warning='0' completed='0' inProgress='0' pending='0'>
 </ResultSummary>
@@ -16,53 +17,82 @@ namespace nApiMonkey
 {
     class TRXReader
     {
+        int failed_tests = 0;
+        int passed_tests = 0;
+
         public StringBuilder read(string trxfile)
         {
-            //int count = 0;
             StringBuilder result = new StringBuilder();
-            string testName="";
-            XmlTextReader reader = new XmlTextReader(trxfile);
-            try
+            string testName = "";
+            if (File.Exists(trxfile))
             {
-                while (reader.Read())
+                XmlTextReader reader = new XmlTextReader(trxfile);
+                try
                 {
-                    switch (reader.NodeType)
+                    while (reader.Read())
                     {
-                        case XmlNodeType.Element: // The node is an element.
-                            if (reader.Name.Equals("Counters"))
-                            {
-                                //Console.Write("<" + reader.Name);
-                                while (reader.MoveToNextAttribute()) // Read the attributes.
-                                    result.Append(reader.Name + "='" + reader.Value + " ");
-                            }else if (reader.Name.Equals("UnitTestResult"))
-                            {
-                                while (reader.MoveToNextAttribute())
+                        switch (reader.NodeType)
+                        {
+                            case XmlNodeType.Element: // The node is an element.
+                                //List the overall results of tests run and update pass/fail counters
+                                if (reader.Name.Equals("Counters"))
                                 {
-                                    if (reader.Name.Equals("testName"))
-                                        testName=reader.Value;
-                                    if(reader.Name.Equals("outcome") && (reader.Value.Equals("Failed") || reader.Value.Equals("Aborted")))
-                                        result.Append("Test Name: "+testName+" Status: " + reader.Value + System.Environment.NewLine);
-                                }
-                            }
-                            break;
-                        case XmlNodeType.Text: //Display the text in each element.
-                                           //   Console.WriteLine(reader.Value);
-                            break;
-                        case XmlNodeType.EndElement: //Display the end of the element.
-                                             //        Console.Write("</" + reader.Name);
-                                               //      Console.WriteLine(">");
-                            break;
-                    }
+                                    while (reader.MoveToNextAttribute()) // Read the attributes.
+                                    {
 
+                                        result.Append(reader.Name + "='" + reader.Value + " ");
+                                        if (reader.Name.Equals("failed"))
+                                            failed_tests = Int32.Parse(reader.Value);
+                                        else if(reader.Name.Equals("passed"))
+                                            passed_tests = Int32.Parse(reader.Value);
+                                    }
+                                }
+                                //List all the failed/aborted test names
+                                else if (reader.Name.Equals("UnitTestResult"))
+                                {
+                                    while (reader.MoveToNextAttribute())
+                                    {
+                                        result.Append("Unittt");
+                                        if (reader.Name.Equals("testName"))
+                                            testName = reader.Value;
+                                        if (reader.Name.Equals("outcome") && (reader.Value.Equals("Failed") || reader.Value.Equals("Aborted")))
+                                            result.Append("Test Name: " + testName + " Status: " + reader.Value + System.Environment.NewLine);
+                                    }
+                                }
+                                break;
+                        }
+                    }
                 }
+                catch (Exception e) { reader.Close(); }
+                reader.Close();              
             }
-            catch (Exception e) { reader.Close(); }
-            reader.Close();
-            //
-            Console.Write(result);
-            Console.ReadKey();
-            return result;
+        return result;
+            
+        }
+        public int Failed_tests
+        {
+            get
+            {
+                return failed_tests;
+            }
+
+            set
+            {
+                failed_tests = value;
+            }
         }
 
+        public int Passed_tests
+        {
+            get
+            {
+                return passed_tests;
+            }
+
+            set
+            {
+                passed_tests = value;
+            }
+        }
     }
 }
