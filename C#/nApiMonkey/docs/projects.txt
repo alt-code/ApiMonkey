@@ -1,0 +1,7 @@
+Sample C# Projects:
+- https://github.com/Microsoft/BotBuilder	[Tested]
+- https://github.com/HangfireIO/HangfireIO  [Tested]
+- https://github.com/jakubgarfield/Bonobo-Git-Server
+- https://github.com/JustinBeckwith/YelpSharp
+- https://github.com/octokit/octokit.net
+- https://github.com/opserver/Opserver
