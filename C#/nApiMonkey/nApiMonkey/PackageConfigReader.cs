@@ -8,17 +8,20 @@ using System.IO;
 
 namespace nApiMonkey
 {
+    //This class reads from and writes to packages.config files.
     class PackageConfigReader
     {
-       public Dictionary<PackageElement, List<string>> readConfig(List<string> packageFilePaths, string root)//string path)
+        //reads all the packages.config files provided as input
+        //and returns a map which contains every package mapped to list of project locations in which it is referenced.
+        public Dictionary<PackageElement, List<string>> readConfig(List<string> packageFilePaths, string root)//string path)
         {
             Dictionary<PackageElement, List<string>> map = new Dictionary<PackageElement, List<string>>();
             string fileName;
             Console.WriteLine("In read config");
             foreach (string path in packageFilePaths)
             {
-                //Filter sample config files from installed libraries
-                if (path.Contains(@"\.nuget") || path.Contains(@"\packages") || path.Contains(@"\Docuentation\") || path.Contains(@"\Samples\"))
+                //Ignore packages.config files in these folders
+                if (path.Contains(@"\.nuget") || path.Contains(@"\packages") || path.Contains(@"\Samples\"))
                     continue;
                 fileName = path + "packages.config";
                 var file = new PackageReferenceFile(fileName);
@@ -48,6 +51,7 @@ namespace nApiMonkey
 
             return map;
         }
+        //reads all packages.config files under the root location
         public List<string> readAllConfigs(string root)
         {
             Console.WriteLine("In read all config");
@@ -61,12 +65,12 @@ namespace nApiMonkey
             return configList;
         }
 
-        public bool writeToConfig(string fileName, string packageId, SemanticVersion newversion)
+        //writes new version of the package to packages.config file
+        public void writeToConfig(string fileName, string packageId, SemanticVersion newversion)
         {
             var file = new PackageReferenceFile(fileName);
             file.DeleteEntry(packageId, null);
             file.AddEntry(packageId, newversion);
-            return true;
         }
     }
 }

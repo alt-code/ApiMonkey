@@ -12,6 +12,8 @@ namespace nApiMonkey
 {
     class UpdateCommand
     {
+        //download the specified version of the package and update project reference to it. The newly downloaded package
+        //will be located in /packages folder. The updated project reference can be checked in corresponding .csproj file.
         public bool Execute(string packageid, string projectFile, SemanticVersion version, string packages)
         {
             try

@@ -15,11 +15,13 @@ TRX Format:
 */
 namespace nApiMonkey
 {
+    //Result of executing mstest is stored in .trx file. Function to read results from this file are written in this class.
     class TRXReader
     {
         int failed_tests = 0;
         int passed_tests = 0;
-
+        
+        //Read trx file
         public StringBuilder read(string trxfile)
         {
             StringBuilder result = new StringBuilder();
@@ -39,7 +41,6 @@ namespace nApiMonkey
                                 {
                                     while (reader.MoveToNextAttribute()) // Read the attributes.
                                     {
-
                                         result.Append(reader.Name + "='" + reader.Value + " ");
                                         if (reader.Name.Equals("failed"))
                                             failed_tests = Int32.Parse(reader.Value);

@@ -7,6 +7,7 @@ using System.IO;
 
 namespace nApiMonkey
 {
+    //Not Completely implemented yet.
     class XunitResultReader
     {
         int failed_tests = 0;
@@ -28,7 +29,7 @@ namespace nApiMonkey
                         // Read the stream to a string, and write the string to the console.
                         if (line.Contains("TEST EXECUTION SUMMARY"))
                             flag = true;
-
+                            //TO BE IMPLEMENTED
                     }
                 }
             }

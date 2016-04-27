@@ -7,6 +7,7 @@ using NuGet;
 
 namespace nApiMonkey
 {
+    //Class for storing package element with it's name and version
     class PackageElement
     {
         //private string id;
