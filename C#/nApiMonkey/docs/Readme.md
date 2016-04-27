@@ -1,9 +1,10 @@
-# Prerequisites:
+## Prerequisites:
 1. Microsoft Visual Studio installed
 2. Git installed
 3. Set the PATH environment variable to point to *msbuild* and *mstest* exe locations.
 (Usually *msbuild* is located inside *'Microsoft.NET\Framework\v4.0'* and *mstest* is located inside *'Microsoft Visual Studio 14.0\Common7\IDE'*. ) 
-# Running instructions: 
+
+## Running instructions: 
 1. Clone the [APIMonkey](http://https://github.com/alt-code/ApiMonkey) project
 2. Go to folder *C#/ApiMonkey*.
 3. Open *nApiMonkey.sln* in Visual Studio.
