@@ -1,14 +1,16 @@
 ## Prerequisites:
 1. Microsoft Visual Studio installed
 2. Git installed
-3. Set the PATH environment variable to point to *msbuild* and *mstest* exe locations.
+3. Nuget.exe installed
+4. Set the PATH environment variable to point to *msbuild* and *mstest* exe locations.
 (Usually *msbuild* is located inside *'Microsoft.NET\Framework\v4.0'* and *mstest* is located inside *'Microsoft Visual Studio 14.0\Common7\IDE'*. ) 
 
 ## Running instructions: 
 1. Clone the [APIMonkey](http://https://github.com/alt-code/ApiMonkey) project
 2. Go to folder *C#/ApiMonkey*.
 3. Open *nApiMonkey.sln* in Visual Studio.
-4. Open file *Program.cs* and modify values of following variables:
+4. Go to Solution Explorer. Right click on the nAPiMonkey and click on Add Reference. Now add the reference of Nuget.exe installed on the computer to this location.
+5. Open file *Program.cs* and modify values of following variables:
 
 ``
 
@@ -28,7 +30,7 @@
 	//relative path to the folder where test dlls are located eg. @"Tests\Microsoft.Bot.Builder.Tests\bin\Debug\Microsoft.Bot.Builder.Tests.dll";
 ``
 
-5. Set script paths- Currently hardcoded to the values inside *nApiMonkey\scripts* folder
+Set script paths- Currently hardcoded to the values inside *nApiMonkey\scripts* folder
 
 ``
 
